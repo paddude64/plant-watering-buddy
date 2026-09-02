@@ -33,6 +33,12 @@ wetter. Almost always one of:
 
 Fix the cause, then double-click the button to clear it.
 
+Note that the serial `stop` command will **not** clear a lockout — it only
+turns the pump off. Clearing is `clear`, or a double-click, and it is
+separate on purpose: a device that stopped because water was not reaching
+the soil should not quietly start watering again just because someone asked
+the pump to stop.
+
 There is a second, milder red: it has used up the maximum number of doses
 allowed in one day. That one clears itself, so you do not need to do
 anything.

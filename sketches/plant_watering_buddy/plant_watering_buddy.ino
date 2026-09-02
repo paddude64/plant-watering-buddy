@@ -690,7 +690,7 @@ void printHelp() {
   Serial.println("  set above <pct>     stop watering above this moisture");
   Serial.println("  set maxday <n>      doses allowed per day");
   Serial.println("  water               force one dose now");
-  Serial.println("  stop                pump off, back to idle");
+  Serial.println("  stop                pump off (does NOT clear a lockout)");
   Serial.println("  clear               clear a lockout and the day's dose count");
   Serial.println("  save                write settings to flash");
   Serial.println();

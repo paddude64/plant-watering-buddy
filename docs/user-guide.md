@@ -192,6 +192,42 @@ Fix it, then double-click the button to start it again.
   was off, and it would rather water too little than too much. Double-
   click the button to reset that.
 
+## Talking to it over serial
+
+Connect at 115200 baud — see [mac-setup.md](mac-setup.md) — and type `help`
+for the list. Nothing here is needed day to day; it is for setting up,
+adjusting, and finding out what the device thinks.
+
+| Command | What it does |
+|---|---|
+| `status` | Everything it currently thinks: state, reading, doses used, settings |
+| `read` | One moisture reading |
+| `cal dry` / `cal wet` | Set the calibration references |
+| `cal clear` | Forget calibration; the pump is disabled until it is redone |
+| `set pulse <sec>` | How long one dose runs the pump |
+| `set soak <min>` | How long to ignore the sensor after a dose |
+| `set below <pct>` | Start watering below this moisture |
+| `set above <pct>` | Stop watering above this moisture |
+| `set maxday <n>` | Doses allowed per day |
+| `water` | Force one dose now |
+| `stop` | Turn the pump off |
+| `clear` | Clear a lockout and reset the day's dose count |
+| `save` | Write settings to flash |
+
+Settings changed with `set` are lost on reboot unless you `save` them.
+
+### `stop` and `clear` are not the same thing
+
+**`stop` turns the pump off. It does not clear a lockout**, and that is
+deliberate. If the device has stopped because water never reached the soil,
+"stop" resuming normal watering would be exactly the wrong response — it
+would go straight back to pumping into an empty jar.
+
+So: `stop` when you just want the pump off. `clear` only once you have
+actually fixed whatever caused the red light. `clear` also resets the
+count of doses used today, which is the same thing a double-click of the
+button does.
+
 ## If something seems wrong
 
 **The light is off completely.** Check both ends of the USB-C cable, and
