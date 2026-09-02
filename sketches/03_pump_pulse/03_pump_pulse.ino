@@ -88,6 +88,8 @@ const int SUGGESTED_DOSE_ML = 25;
 Preferences prefs;
 
 bool pumpRunning = false;
+bool hardLimitLatched = false;  // set when the ceiling fires; cleared only by
+                                // letting go of the button
 unsigned long pumpStartedAt = 0;
 unsigned long requestedRunMs = 0;   // 0 means "while the button is held"
 unsigned long lastRunMs = 0;        // how long the last completed run lasted
@@ -289,7 +291,13 @@ void loop() {
   pollSerial();
 
   // Holding the button runs the pump, for priming the tube.
-  if (btnHeld && !pumpRunning) pumpOn(0);
+  //
+  // The latch matters: without it, the hard limit below stops the pump and
+  // then this line starts it again on the very next iteration while the
+  // button is still down, so the ceiling could be held open indefinitely.
+  // Releasing the button is what re-arms it.
+  if (!btnHeld) hardLimitLatched = false;
+  if (btnHeld && !pumpRunning && !hardLimitLatched) pumpOn(0);
   if (!btnHeld && pumpRunning && requestedRunMs == 0) pumpOff();
 
   if (pumpRunning) {
@@ -299,7 +307,9 @@ void loop() {
     // The backstop, which applies to every route to the pump including the
     // button, and does not trust the logic above to be correct.
     else if (elapsed > PUMP_HARD_MAX_MS) {
-      Serial.println("Hard limit reached — stopping.");
+      Serial.println("Hard limit reached — stopping. Let go of the button "
+                     "before running it again.");
+      hardLimitLatched = true;
       pumpOff();
     }
   }

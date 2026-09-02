@@ -34,7 +34,9 @@ else
 fi
 
 usage() {
-  sed -n '3,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  # Print the header comment, stopping at the first line that is not one, so
+  # the range cannot drift out of date as the header grows.
+  awk 'NR >= 3 { if ($0 !~ /^#/) exit; sub(/^# ?/, ""); print }' "${BASH_SOURCE[0]}"
   exit "${1:-0}"
 }
 

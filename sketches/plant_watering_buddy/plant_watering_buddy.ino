@@ -146,7 +146,13 @@ enum LockReason {
 State state = ST_NEEDS_CALIBRATION;
 LockReason lockReason = LOCK_NONE;
 
+// Whether the hardware watchdog actually armed. Checked rather than assumed:
+// a watchdog you believe in but do not have is worse than none.
+bool watchdogArmed = false;
+
 bool pumpRunning = false;
+bool manualLimitReported = false;  // so the timeout is announced once, not
+                                   // once per pass of loop()
 unsigned long pumpStartedAt = 0;
 unsigned long stateEnteredAt = 0;
 
@@ -544,16 +550,24 @@ void runControl() {
     if (state != ST_MANUAL) {
       Serial.println("Manual override: pump on while held.");
       enterState(ST_MANUAL);
+      manualLimitReported = false;
       pumpOn();
     }
+    // Note pumpStartedAt is deliberately not reset when the override takes
+    // over a dose already in progress: the limit then covers the total run,
+    // which errs towards less water.
     if (now - pumpStartedAt > MANUAL_MAX_MS) {
-      Serial.println("Manual override hit its time limit.");
+      if (!manualLimitReported) {
+        Serial.println("Manual override hit its time limit.");
+        manualLimitReported = true;
+      }
       pumpOff();
     }
     return;
   }
   if (state == ST_MANUAL) {
     pumpOff();
+    manualLimitReported = false;
     Serial.println("Manual override released.");
     enterState(lockReason == LOCK_NONE ? ST_IDLE : ST_LOCKOUT);
     return;
@@ -567,6 +581,9 @@ void runControl() {
       break;
 
     case ST_IDLE:
+      // Resting states all assert the pump is off, so that no transition into
+      // one can leave it running.
+      if (pumpRunning) pumpOff();
       if (pct >= 0 && pct < cfg.waterBelowPct) {
         Serial.printf("Soil at %d%%, below the %d%% mark. Starting to water.\n",
                       pct, cfg.waterBelowPct);
@@ -647,6 +664,7 @@ void printStatus() {
   Serial.printf("  pump           : %s\n", pumpRunning ? "RUNNING" : "off");
   Serial.printf("  doses today    : %d of %d\n", pulsesToday, cfg.maxPulsesPerDay);
   Serial.printf("  uptime         : %lu min\n", millis() / 60000UL);
+  Serial.printf("  watchdog       : %s\n", watchdogArmed ? "armed" : "NOT ARMED");
   Serial.println("  settings:");
   Serial.printf("    calibration  : %s (dry %d, wet %d)\n",
                 cfg.calibrated ? "done" : "NOT DONE", cfg.dryRaw, cfg.wetRaw);
@@ -719,6 +737,10 @@ void setSetting(const String &name, int value) {
 }
 
 void clearLockout() {
+  // Stop the pump first. Without this, clearing during a dose lands in
+  // ST_IDLE with the pump still energised, and ST_IDLE is the one state that
+  // does not defensively switch it off — so it would run to the hard ceiling.
+  pumpOff();
   lockReason = LOCK_NONE;
   unresponsivePulses = 0;
   pulsesToday = 0;
@@ -775,6 +797,8 @@ void handleCommand(String line) {
       Serial.println("Calibrate first — otherwise the dose is a guess.");
     } else if (state == ST_LOCKOUT) {
       Serial.println("Locked out. `clear` first, once you have fixed the cause.");
+    } else if (pumpRunning) {
+      Serial.println("Already watering — wait for this dose to finish.");
     } else {
       pctAtCycleStart = moisturePercent(smoothedRaw());
       unresponsivePulses = 0;
@@ -782,8 +806,16 @@ void handleCommand(String line) {
     }
   } else if (verb == "stop") {
     pumpOff();
-    enterState(cfg.calibrated ? ST_IDLE : ST_NEEDS_CALIBRATION);
-    Serial.println("Stopped.");
+    // `stop` reads as a safety action, so it must not quietly resume
+    // automatic watering. A lockout is cleared only by `clear`, deliberately,
+    // once a person has dealt with whatever caused it.
+    if (state == ST_LOCKOUT) {
+      Serial.println("Pump off. Still locked out — use `clear` once you have "
+                     "fixed the cause.");
+    } else {
+      enterState(cfg.calibrated ? ST_IDLE : ST_NEEDS_CALIBRATION);
+      Serial.println("Stopped.");
+    }
   } else if (verb == "clear") {
     clearLockout();
   } else if (verb == "save") {
@@ -839,8 +871,14 @@ void setup() {
       .idle_core_mask = 0,
       .trigger_panic = true,
   };
-  esp_task_wdt_reconfigure(&wdt);
-  esp_task_wdt_add(NULL);
+  esp_err_t wdtErr = esp_task_wdt_reconfigure(&wdt);
+  if (wdtErr == ESP_OK) wdtErr = esp_task_wdt_add(NULL);
+  watchdogArmed = (wdtErr == ESP_OK);
+  if (!watchdogArmed) {
+    Serial.printf("WARNING: the watchdog did not arm (%s). The board will not "
+                  "reset itself if this loop hangs.\n",
+                  esp_err_to_name(wdtErr));
+  }
 
   Serial.println();
   Serial.printf("Plant Watering Buddy %s\n", FIRMWARE_VERSION);
@@ -853,7 +891,7 @@ void setup() {
 }
 
 void loop() {
-  esp_task_wdt_reset();
+  if (watchdogArmed) esp_task_wdt_reset();
 
   updateButton();
   pollSerial();
