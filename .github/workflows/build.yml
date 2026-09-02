@@ -45,13 +45,10 @@ jobs:
           key: arduino-${{ runner.os }}-${{ hashFiles('sketches/*/sketch.yaml') }}
           restore-keys: arduino-${{ runner.os }}-
 
+      # Same script you run locally, so the compile flags cannot drift
+      # between your machine and CI. --strict makes warnings fatal.
       - name: Compile ${{ matrix.sketch }}
-        working-directory: sketches/${{ matrix.sketch }}
-        run: |
-          arduino-cli compile \
-            --profile atomlite \
-            --warnings all \
-            --output-dir build
+        run: ./tools/build-all.sh --strict ${{ matrix.sketch }}
 
       # Keep the compiled binary. Useful for checking size changes over
       # time, and it is what a web-based flasher would eventually serve.

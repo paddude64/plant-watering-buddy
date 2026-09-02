@@ -63,6 +63,17 @@ arduino-cli compile --profile atomlite
 arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 ```
 
+To check everything still compiles before pushing:
+
+```bash
+./tools/build-all.sh
+```
+
+CI runs that same script, one sketch per job, with `--strict` so that
+warnings fail the build. Note that arduino-cli caches builds and a cached
+build reports no warnings even when there are some, so pass `--clean` when
+you want to trust the warning count.
+
 ## How the watering actually works
 
 The obvious design — run the pump until the sensor reads wet — floods
@@ -100,6 +111,7 @@ means.
 ```
 sketches/       one directory per sketch, each with a pinned sketch.yaml
 docs/           setup, hardware reference, LED key, user guide
+tools/          build-all.sh — compile everything, same as CI does
 .github/        CI: compiles every sketch on every push
 ```
 
