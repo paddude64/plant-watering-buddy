@@ -1,0 +1,14 @@
+# Pinned toolchain for this sketch. See sketches/01_blink/sketch.yaml for
+# the full explanation of what a profile is and how to build with one.
+profiles:
+  atomlite:
+    notes: M5Stack Atom Lite (ESP32-PICO-D4) + Watering Unit (U101)
+    fqbn: esp32:esp32:m5stack_atom
+    platforms:
+      - platform: esp32:esp32 (3.3.10)
+        platform_index_url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+    # No libraries. Everything used here — rgbLedWrite() for the LED,
+    # Preferences for flash storage, esp_task_wdt for the watchdog — comes
+    # with the ESP32 core itself.
+
+default_profile: atomlite

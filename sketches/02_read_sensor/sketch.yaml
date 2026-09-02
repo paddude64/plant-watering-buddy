@@ -1,0 +1,26 @@
+# Pinned toolchain for this sketch.
+#
+# Everyone who builds this — you, me, and CI — gets byte-identical
+# core and library versions, because they are named right here.
+# Build it with:
+#
+#     arduino-cli compile --profile atomlite
+#
+# The first build downloads the ESP32 core (~200MB) into a local
+# staging directory. Later builds are fast.
+#
+# To upload after building (find your port with `arduino-cli board list`):
+#
+#     arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXX
+#
+profiles:
+  atomlite:
+    notes: M5Stack Atom Lite (ESP32-PICO-D4)
+    fqbn: esp32:esp32:m5stack_atom
+    platforms:
+      - platform: esp32:esp32 (3.3.10)
+        platform_index_url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+    # No libraries: rgbLedWrite() comes with the ESP32 core, and reading
+    # an analog pin and a button needs nothing extra.
+
+default_profile: atomlite

@@ -1,0 +1,12 @@
+# arduino-cli / Arduino IDE build output
+build/
+*.hex
+*.elf
+*.bin
+*.map
+
+# arduino-cli profile staging (downloaded cores/libraries)
+.arduino15/
+
+# macOS
+.DS_Store

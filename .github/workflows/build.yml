@@ -1,0 +1,63 @@
+name: build
+
+# Every sketch in this repo is compiled on every push and pull request.
+# The point is not to catch clever bugs — a compiler can't tell you the
+# pump logic is wrong — but to guarantee that whatever is on `main` will
+# actually build on a clean machine, so "main is always flashable" is a
+# fact rather than a hope.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Compile every sketch even if an earlier one fails, so one broken
+      # sketch doesn't hide the state of the others.
+      fail-fast: false
+      matrix:
+        sketch:
+          - 01_blink
+          - 02_read_sensor
+          - 03_pump_pulse
+          - plant_watering_buddy
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install arduino-cli
+        uses: arduino/setup-arduino-cli@v2
+
+      # The ESP32 core is a ~200MB download. Cache it, keyed on the
+      # sketch.yaml files, so it is only re-fetched when a pinned version
+      # actually changes.
+      - name: Cache Arduino cores and libraries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15
+            ~/Arduino
+          key: arduino-${{ runner.os }}-${{ hashFiles('sketches/*/sketch.yaml') }}
+          restore-keys: arduino-${{ runner.os }}-
+
+      - name: Compile ${{ matrix.sketch }}
+        working-directory: sketches/${{ matrix.sketch }}
+        run: |
+          arduino-cli compile \
+            --profile atomlite \
+            --warnings all \
+            --output-dir build
+
+      # Keep the compiled binary. Useful for checking size changes over
+      # time, and it is what a web-based flasher would eventually serve.
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.sketch }}
+          path: sketches/${{ matrix.sketch }}/build/*.bin
+          if-no-files-found: error
