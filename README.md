@@ -20,6 +20,10 @@ pinout and wiring in [docs/hardware.md](docs/hardware.md).
 nothing here has run on a real device yet. Every hardware-facing number is
 an assumption until someone plugs a kit in.
 
+When a kit arrives, work through
+**[docs/bring-up.md](docs/bring-up.md)** — it is the checklist that turns
+the guesses below into measurements, with blanks to fill in as you go.
+
 - **Every timing value is a guess until the pump is measured.** The dose is
   expressed in seconds of pumping, so it means nothing until someone knows
   how many millilitres a second of pumping delivers. Run
@@ -110,7 +114,8 @@ means.
 
 ```
 sketches/       one directory per sketch, each with a pinned sketch.yaml
-docs/           setup, hardware reference, LED key, user guide
+docs/           setup, bring-up checklist, hardware reference, LED key,
+                user guide
 tools/          build-all.sh — compile everything, same as CI does
 .github/        CI: compiles every sketch on every push
 ```
