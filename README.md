@@ -5,6 +5,17 @@ A small, self-contained automatic plant waterer: an **M5Stack Atom Lite**
 needs water. No server, no cloud account, no phone app. It needs a USB
 power supply and a jar of water.
 
+> **This is a learning project, and none of the code has been run yet.**
+> Getting familiar with the M5Stack ecosystem and ESP32 development is as
+> much the point as watering a plant, so things are explained here that a
+> seasoned embedded developer would not need explained.
+>
+> The hardware has not arrived. Everything compiles, and nothing has been
+> tested on a real device — pin assignments, thresholds, timings and the
+> power budget are all reasoned from datasheets rather than measured.
+> Treat every hardware-facing number as an assumption until
+> [docs/bring-up.md](docs/bring-up.md) has been worked through.
+
 ## Hardware
 
 - [M5Stack Atom Lite](https://docs.m5stack.com/en/core/ATOM%20Lite) — ESP32-PICO-D4, one RGB LED, one button
@@ -16,13 +27,9 @@ pinout and wiring in [docs/hardware.md](docs/hardware.md).
 
 ## Status
 
-**Pre-hardware.** The build pipeline works and every sketch compiles, but
-nothing here has run on a real device yet. Every hardware-facing number is
-an assumption until someone plugs a kit in.
-
-When a kit arrives, work through
-**[docs/bring-up.md](docs/bring-up.md)** — it is the checklist that turns
-the guesses below into measurements, with blanks to fill in as you go.
+Specifically, what is still guesswork. When a kit arrives, work through
+**[docs/bring-up.md](docs/bring-up.md)** — the checklist that turns these
+into measurements, with blanks to fill in as you go.
 
 - **Every timing value is a guess until the pump is measured.** The dose is
   expressed in seconds of pumping, so it means nothing until someone knows
