@@ -120,6 +120,7 @@ means.
 ## Repo layout
 
 ```
+LICENSE         MIT
 sketches/       one directory per sketch, each with a pinned sketch.yaml
 docs/           setup, bring-up checklist, hardware reference, LED key,
                 user guide
@@ -154,3 +155,10 @@ Two identical kits, developed in parallel.
   [docs/hardware.md](docs/hardware.md) with the date and which kit it came
   from. Two kits will not agree exactly, and knowing which numbers came
   from where matters.
+
+## License
+
+[MIT](LICENSE). Do what you like with it; there is no warranty, which
+matters more than usual here — this is firmware that switches a pump next
+to a houseplant, and it has not been tested on hardware. Satisfy yourself
+that it behaves before leaving it running unattended.
