@@ -245,3 +245,44 @@ comes through.
 `set below 25` waters at a drier point, `set above 60` waters for longer
 before stopping, `set pulse 4` changes the size of each dose. Then `save`.
 Type `status` to see the current settings.
+
+## Putting it away
+
+If it is going into a cupboard for the winter, or you are moving and it
+will be boxed up for a while, get the water out of it first. Two minutes
+now saves finding a slimy tube and a scaled-up pump later.
+
+Water left standing in the tube grows biofilm. In a hard-water area the
+pump head furs up with limescale. And if wherever you are storing it can
+freeze, draining stops being good practice and becomes necessary — water
+expanding inside a pump head is how they crack.
+
+### Draining it
+
+1. **Lift the inlet tube out of the water.** Hold the outlet end over a
+   sink.
+2. **Hold the button for a few seconds.** The pump pushes the water in
+   the tube out, then starts pulling air through behind it.
+3. **Do that once or twice more**, until nothing else comes out.
+4. **Unplug it, disconnect the tubes**, and shake the water out of them.
+5. **Leave it all out to dry** before it goes in a box. A day is plenty.
+
+### One thing to be careful about
+
+Everywhere else this guide tells you not to run the pump dry, and that is
+still true. The difference is how long. **A few seconds of running dry to
+clear the tube is fine and is how you empty one of these.** What harms a
+small pump is running dry for a sustained stretch, because the water it
+is moving is also what keeps it cool.
+
+So: short presses, not one long one.
+
+### When it comes back out
+
+Nothing to redo. The calibration and settings live in the controller's
+flash and survive being unplugged for as long as you like — plug it back
+in, prime the tube again, and it picks up where it left off.
+
+Worth checking on the way out: if the pump still seems to hold water
+after a couple of purge runs, that is worth knowing about this hardware.
+Make a note of it.
