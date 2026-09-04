@@ -10,7 +10,7 @@ Do this for **each kit separately**. Two pumps and two sensors will not
 give the same numbers, and firmware calibrated against one is wrong for
 the other.
 
-    Kit:  ______________        Date:  ______________
+    Kit:  Kit 1                 Date:  2026-09-04
 
 ## Before you start
 
@@ -30,12 +30,12 @@ Not yet: the plant.
 Proves the toolchain, the board, the cable and the upload path, with
 nothing else connected. **Leave the watering unit in its bag for this.**
 
-- [ ] `arduino-cli board list` shows a port
-- [ ] Port name: `/dev/cu.________________`
-- [ ] Compile and upload succeed
-- [ ] LED cycles red → green → blue
-- [ ] Holding the button turns it white
-- [ ] Serial monitor at 115200 shows readable text
+- [x] `arduino-cli board list` shows a port
+- [x] Port name: `/dev/cu.usbserial-8152483DF5`
+- [x] Compile and upload succeed
+- [x] LED cycles red → green → blue
+- [x] Holding the button turns it white
+- [x] Serial monitor at 115200 shows readable text
 
 **If the port never appears:** try another cable first — plenty are
 charge-only. Then the CH9102F driver, per [mac-setup.md](mac-setup.md).
@@ -66,7 +66,7 @@ arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 
 Everything below happens through that monitor.
 
-- [ ] Boot number at startup: `______`
+- [x] Boot number at startup: `1`
       Type `status` to read it, rather than trying to catch it at boot.
       `upload` resets the board itself the moment flashing finishes —
       before `monitor` has even started — so the sketch's own startup
@@ -82,11 +82,11 @@ Everything below happens through that monitor.
       did not ask for, like a brownout — which is the whole reason it is
       worth writing down now: it gives you a baseline to compare against
       after the runs below. See **Brownout** at the end of this step.
-- [ ] Hold **the same top-face button as Step 1** until water comes out
+- [x] Hold **the same top-face button as Step 1** until water comes out
       of the outlet — this is priming, and that water does not count.
       There is nothing to press on the watering unit itself; the button
       is always on the controller.
-- [ ] Empty the measuring jug
+- [x] Empty the measuring jug
 
 ### Flow rate
 
@@ -94,12 +94,12 @@ Run it three times. `run 10`, read the jug, `ml <n>`.
 
 | Run | ml collected | ml/second |
 |---|---|---|
-| 1 |  |  |
-| 2 |  |  |
-| 3 |  |  |
+| 1 | 100 | 9.4 |
+| 2 | 100 | ~10 (exact timing not captured) |
+| 3 | 100 | 9.8 |
 
-    Average flow rate:  ________ ml/s
-    Suggested dose:     set pulse ________   (the sketch prints this)
+    Average flow rate:  ~9.6 ml/s
+    Suggested dose:     set pulse 3   (the sketch printed this)
 
 **If the pump does not run at all:** the pin assignment is wrong, or the
 Grove cable is not seated. Yellow is `PUMP_EN` on G26 —
@@ -112,11 +112,15 @@ towards less water.
 
 ### Brownout
 
-- [ ] Type `status` after the runs. Boot number now: `______`
-- [ ] Reset cause reported: `________________________`
+- [x] Type `status` after the runs. Boot number now: `1`
+- [x] Reset cause reported: `power on`
 
-    Did it brown out?   yes / no
-    Charger used:       ________________
+    Did it brown out?   no — not on MacBook USB-C power (boot number
+                        held at 1 across three full 10s runs)
+    Charger used:       MacBook USB-C port
+
+    STILL TO DO: repeat with the actual USB-C wall charger before
+    treating this as settled — see docs/hardware.md.
 
 **If the boot number went up and the cause says `BROWNOUT`:** the pump is
 starving the board through the Atom's 5V pin. Wire the pump's red 5V wire

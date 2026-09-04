@@ -53,8 +53,17 @@ in flash and prints `esp_reset_reason()` on every startup. If the boot
 number climbs while the pump runs and the cause reads `BROWNOUT`, that is
 the answer. Test with the charger you actually intend to leave it on.
 
-    Browns out through the Atom's 5V pin?  yes / no
-    Charger used:  ____        (date: ____ , kit: ____ )
+    Browns out through the Atom's 5V pin?  no — not on MacBook USB-C power
+    Charger used:  MacBook USB-C port (same port used for programming)
+                   (date: 2026-09-04, kit: Kit 1)
+
+    Tested: boot number held at 1, cause `power on`, across three
+    consecutive full 10-second pump runs. No reset, no BROWNOUT.
+
+    NOT YET TESTED: the actual USB-C wall charger the finished kit will
+    run on day to day. A laptop's own USB port and a wall charger do not
+    always supply the same current — repeat this test with that charger
+    before treating the wiring question as closed.
 
 ## Unknown: flow rate
 
@@ -63,7 +72,13 @@ how much water a given number of seconds of pumping delivers, measure it:
 run the pump into a measuring jug for a timed 30 seconds and do the
 arithmetic. Record the answer here.
 
-    Measured flow rate: ____ ml per second   (date: ____ , kit: ____ )
+    Measured flow rate: ~9.6 ml/s   (date: 2026-09-04, kit: Kit 1)
+
+        Run 1:  100 ml in 10.627 s  =  9.4 ml/s
+        Run 2:  100 ml in ~10 s     =  ~10 ml/s (not captured precisely)
+        Run 3:  100 ml in 10.159 s  =  9.8 ml/s
+
+    Suggested dose (25 ml): set pulse 3
 
 `03_pump_pulse` measures this for you: prime the tube, `run 10`, then tell
 it how many millilitres landed in the jug with `ml <n>`. It prints the flow
