@@ -403,7 +403,12 @@ void loadSettings() {
   cfg.maxPulsesPerDay = prefs.getInt("maxDay", cfg.maxPulsesPerDay);
   cfg.waterBelowPct = prefs.getInt("waterPct", cfg.waterBelowPct);
   cfg.stopAbovePct = prefs.getInt("stopPct", cfg.stopAbovePct);
-  cfg.calibrated = prefs.getBool("cal", false);
+  // Falls back to the compile-time default like every other field above,
+  // rather than a hardcoded false. That makes it possible to ship a sketch
+  // with calibration baked in — edit dryRaw/wetRaw and set this true — for
+  // anyone who would rather not do it over serial. See docs/bring-up.md
+  // Step 5 for when that is and is not a good idea.
+  cfg.calibrated = prefs.getBool("cal", cfg.calibrated);
 
   // The day's dose count survives a reboot on purpose. Without a real-time
   // clock this device cannot tell whether it was off for a minute or a

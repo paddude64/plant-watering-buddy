@@ -274,6 +274,21 @@ different pot. They are never committed to the repo.
 Reflashing does not erase them. `status` shows what a device currently
 holds.
 
+**Can you skip the serial console and just edit them into the sketch?**
+Yes — the `Settings cfg` initialiser at the top of
+`plant_watering_buddy.ino` is where those values start from, so filling in
+`dryRaw`, `wetRaw`, `pulseSeconds` and setting `calibrated = true` there
+produces a device that comes up already calibrated. Stored settings still
+win over it, so a device that has ever been `save`d keeps what it was
+told.
+
+It is a reasonable shortcut for one device you are setting up yourself.
+It is a bad habit for this repo, because those values describe *one*
+sensor in *one* pot: committing yours makes the sketch wrong for the
+other kit, and the two would need branches or `#ifdef`s to coexist —
+more trouble than typing three commands. If you do edit them locally to
+save yourself the serial session, do not commit it.
+
 ### 2. Into the sketch source — only if a *shared* assumption was wrong
 
 These are compile-time constants, identical on both kits, and changing one
