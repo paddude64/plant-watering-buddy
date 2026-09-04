@@ -5,16 +5,17 @@ A small, self-contained automatic plant waterer: an **M5Stack Atom Lite**
 needs water. No server, no cloud account, no phone app. It needs a USB
 power supply and a jar of water.
 
-> **This is a learning project, and none of the code has been run yet.**
+> **This is a learning project, and it is partway through bring-up.**
 > Getting familiar with the M5Stack ecosystem and ESP32 development is as
 > much the point as watering a plant, so things are explained here that a
 > seasoned embedded developer would not need explained.
 >
-> The hardware has not arrived. Everything compiles, and nothing has been
-> tested on a real device — pin assignments, thresholds, timings and the
-> power budget are all reasoned from datasheets rather than measured.
-> Treat every hardware-facing number as an assumption until
-> [docs/bring-up.md](docs/bring-up.md) has been worked through.
+> One kit is in hand. The board, the upload path and the pump are proven
+> on real hardware; the sensor side and the watering firmware itself have
+> not been run yet, and several numbers are still reasoned from datasheets
+> rather than measured. See **Status** below for exactly which, and
+> [docs/bring-up.md](docs/bring-up.md) for the procedure that settles
+> them.
 
 ## Hardware
 
@@ -27,25 +28,35 @@ pinout and wiring in [docs/hardware.md](docs/hardware.md).
 
 ## Status
 
-Specifically, what is still guesswork. When a kit arrives, work through
-**[docs/bring-up.md](docs/bring-up.md)** — the checklist that turns these
-into measurements, with blanks to fill in as you go.
+Work through **[docs/bring-up.md](docs/bring-up.md)** with a kit to move
+things from the second list to the first. Measurements go in
+[docs/hardware.md](docs/hardware.md), one section per kit.
 
-- **Every timing value is a guess until the pump is measured.** The dose is
-  expressed in seconds of pumping, so it means nothing until someone knows
-  how many millilitres a second of pumping delivers. Run
-  [`03_pump_pulse`](sketches/03_pump_pulse) first of all when hardware
-  arrives — it prints the `set pulse` value to use, and settles the
-  brownout question at the same time.
-- Pin order, ADC direction, and button behaviour are all from datasheets,
-  not from a working device.
-- The plausibility bounds (raw 100-4000) and the soak time (20 minutes)
-  are reasonable starting guesses, not measurements. Both want narrowing
-  once a real sensor has been seen in real soil.
-- The power budget question in [docs/hardware.md](docs/hardware.md) is open.
+**Proven on real hardware** (Kit 1):
+
+- Toolchain, board and upload path — `01_blink` runs, LED and button
+  behave as expected.
+- The pump runs off `PUMP_EN` on G26, and its flow rate is measured.
+- No brownout through the Atom's own 5V pin across three full ten-second
+  runs, on laptop USB power.
+
+**Still assumption, not measurement:**
+
+- **The sensor side is entirely unverified.** ADC direction, what real
+  soil actually reads, and the plausibility bounds (raw 100-4000) are all
+  from datasheets. The bounds in particular decide whether a healthy probe
+  gets mistaken for a broken cable.
+- **The watering firmware has never run.** `plant_watering_buddy` compiles
+  and has been reasoned through carefully, but no soil has been watered by
+  it.
+- The soak time (20 minutes) and thresholds (30% / 55%) are starting
+  guesses, meaningless until the soil range is known.
+- The brownout result is only for laptop USB power, not the wall charger a
+  finished kit would run on — see [docs/hardware.md](docs/hardware.md).
 - Without a real-time clock the device cannot tell how long it was
   unpowered, so the daily dose count is deliberately kept across reboots.
-  It can only make it water less than it should, never more.
+  It can only make it water less than it should, never more. That one is a
+  design choice rather than an open question.
 
 ## Getting started
 
@@ -57,7 +68,8 @@ Just want the toolchain working? → **[docs/mac-setup.md](docs/mac-setup.md)**
 gets you from nothing to a blinking LED.
 
 Then work up through the sketches in order. Each is standalone and teaches
-one thing:
+one thing — but they are also a measurement pipeline, not four unrelated
+exercises:
 
 | Sketch | What it proves |
 |---|---|
@@ -65,6 +77,23 @@ one thing:
 | [`02_read_sensor`](sketches/02_read_sensor) | What the sensor actually reads, which direction it goes, and how noisy it is. Never runs the pump. |
 | [`03_pump_pulse`](sketches/03_pump_pulse) | **Measures the flow rate**, and answers the brownout question by counting boots and reading the reset reason. |
 | [`plant_watering_buddy`](sketches/plant_watering_buddy) | The real thing. Pulse-and-soak control, calibration in flash, serial console. |
+
+**02 and 03 exist to produce numbers that the real firmware needs.** The
+flow rate from `03` becomes its dose size; the sensor readings from `02`
+become its wet and dry reference points. Those numbers are **typed into
+the running device over its serial console** — `cal dry`, `cal wet`,
+`set pulse <n>`, then `save` — and kept in the ESP32's flash, where they
+survive reflashing. They are not compiled in, because they are properties
+of one sensor in one pot and are meant to differ between kits.
+
+Until it has them, `plant_watering_buddy` shows a yellow LED and refuses
+to run the pump at all, on the grounds that an uncalibrated dose is a
+guessed dose. So the ladder is not optional ceremony — skipping to the
+last sketch gets you a device that will not water anything.
+
+[docs/bring-up.md](docs/bring-up.md) is the procedure for all of it, and
+its Step 5 covers the one case where a measurement *does* belong in the
+source rather than in flash.
 
 Build any of them the same way:
 
