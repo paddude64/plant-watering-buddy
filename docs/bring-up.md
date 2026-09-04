@@ -54,9 +54,20 @@ kits get wired, and you do not want to assemble anything twice.
 Connect the watering unit to the Grove port. Inlet tube in the jug of
 water, **outlet tube into the empty measuring jug**.
 
-- [ ] Boot number at startup: `______`  (it counts up every boot)
-- [ ] Hold the button until water comes out of the outlet — this is
-      priming, and that water does not count
+Flash `03_pump_pulse` and open the serial monitor, same as Step 1
+(`arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200`).
+Everything below happens through that monitor.
+
+- [ ] Boot number at startup: `______`
+      Printed as soon as the monitor connects, e.g. `boot number 3, cause:
+      power on`. It counts up on every reset — including a reset you did
+      not ask for, like a brownout — which is the whole reason it is
+      worth writing down now: it gives you a baseline to compare against
+      after the runs below. See **Brownout** at the end of this step.
+- [ ] Hold **the same top-face button as Step 1** until water comes out
+      of the outlet — this is priming, and that water does not count.
+      There is nothing to press on the watering unit itself; the button
+      is always on the controller.
 - [ ] Empty the measuring jug
 
 ### Flow rate
