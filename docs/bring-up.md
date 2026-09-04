@@ -1,16 +1,19 @@
 # Bring-up checklist
 
-The first session with real hardware. Work through it in order and write
-the numbers down as you go — this page is the worksheet, and
-[hardware.md](hardware.md) is where the final numbers live afterwards.
+The first session with a real kit: prove the hardware, measure the two
+things the firmware cannot guess, and get it watering under supervision.
 
 Budget about two hours, most of it waiting for soil to do things.
 
-Do this for **each kit separately**. Two pumps and two sensors will not
-give the same numbers, and firmware calibrated against one is wrong for
-the other.
+> **This page is the procedure, and it stays blank.**
+> Do not write your numbers here. Every kit gets its own results section
+> in [hardware.md](hardware.md) — open that alongside this and fill it in
+> as you go. Keeping the two apart means two people can work through this
+> on two kits without overwriting each other.
 
-    Kit:  Kit 1                 Date:  2026-09-04
+**Do the whole thing per kit, from scratch.** Two pumps and two sensors
+will not give the same numbers, and firmware calibrated against one kit
+is wrong for the other. Somebody else's results are not a shortcut.
 
 ## Before you start
 
@@ -25,18 +28,18 @@ Not yet: the plant.
 
 ### How these sessions work
 
-Every step from here on flashes a sketch, then talks to it the same way:
-open a serial connection, type a command straight into that same
-terminal window, press Enter, read the reply that appears right below
-it. There is nothing else to open — the window running `arduino-cli
-monitor` is both where you type and where the answers show up.
+Every step flashes a sketch, then talks to it the same way: open a serial
+connection, type a command straight into that same terminal window, press
+Enter, read the reply that appears right below it. There is nothing else
+to open — the window running `arduino-cli monitor` is both where you type
+and where the answers show up.
 
 ```bash
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 ```
 
 Leave it running for the whole step. `Ctrl-C` closes it, which you only
-need if you have to free the port for another `upload`.
+need in order to free the port for the next `upload`.
 
 ---
 
@@ -45,15 +48,31 @@ need if you have to free the port for another `upload`.
 Proves the toolchain, the board, the cable and the upload path, with
 nothing else connected. **Leave the watering unit in its bag for this.**
 
-- [x] `arduino-cli board list` shows a port
-- [x] Port name: `/dev/cu.usbserial-8152483DF5`
-- [x] Compile and upload succeed
-- [x] LED cycles red → green → blue
-- [x] Holding the button turns it white
-- [x] Serial monitor at 115200 shows readable text
+```bash
+cd sketches/01_blink
+arduino-cli compile --profile atomlite
+arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
+arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
+```
+
+Find your port first with `arduino-cli board list` — run it before and
+after plugging the Atom in, and the line that appears is yours.
+
+- [ ] A new port appears when the Atom is plugged in
+- [ ] Compile and upload succeed
+- [ ] LED cycles red → green → blue
+- [ ] Holding the button turns it white
+- [ ] Serial monitor shows readable text
+
+**→ Record in [hardware.md](hardware.md):** the port name.
 
 **If the port never appears:** try another cable first — plenty are
 charge-only. Then the CH9102F driver, per [mac-setup.md](mac-setup.md).
+
+**If the upload fails with an `esptool` traceback** ending `StopIteration`
+or "chip stopped responding", that is the upload speed — see
+[mac-setup.md](mac-setup.md). Every `sketch.yaml` here already pins
+`UploadSpeed=115200` for this reason.
 
 Do not continue until this all works. Everything after it assumes the
 board and the upload path are known-good.
@@ -69,9 +88,6 @@ kits get wired, and you do not want to assemble anything twice.
 Connect the watering unit to the Grove port. Inlet tube in the jug of
 water, **outlet tube into the empty measuring jug**.
 
-Flash `03_pump_pulse`, then open the serial monitor using the port name
-you wrote down in Step 1:
-
 ```bash
 cd sketches/03_pump_pulse
 arduino-cli compile --profile atomlite
@@ -79,64 +95,65 @@ arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 ```
 
-Type each command below directly into that window and press Enter —
-this is the session just described above.
+### First, a baseline boot number
 
-- [x] Boot number at startup: `1`
-      Type `status` to read it, rather than trying to catch it at boot.
-      `upload` resets the board itself the moment flashing finishes —
-      before `monitor` has even started — so the sketch's own startup
-      line is reliably gone by the time you are watching; you will
-      likely see a few lines of ESP32 boot-ROM text (`ets Jun 8 2016
-      ...`, `rst:`, `configsip:`) and then nothing. `status` sidesteps
-      that entirely and prints the same information on demand:
+Type `status`. Among other things it prints:
 
-          boot number      : 3
-          this boot's cause: power on
+```
+  boot number      : 1
+  this boot's cause: power on
+```
 
-      The number itself counts up on every reset — including one you
-      did not ask for, like a brownout — which is the whole reason it is
-      worth writing down now: it gives you a baseline to compare against
-      after the runs below. See **Brownout** at the end of this step.
-- [x] Hold **the same top-face button as Step 1** until water comes out
-      of the outlet — this is priming, and that water does not count.
-      There is nothing to press on the watering unit itself; the button
-      is always on the controller.
-- [x] Empty the measuring jug
+The boot number counts up on every reset, **including one you did not ask
+for** — which is how a brownout gets caught later in this step. Note it
+now so you have something to compare against.
+
+Read it with `status` rather than trying to catch it at startup. `upload`
+resets the board itself the instant flashing finishes, well before
+`monitor` has started, so the sketch's own startup banner is reliably
+gone by the time you are watching. What you will actually see on connect
+is a few lines of ESP32 boot-ROM text — `ets Jun 8 2016`, `rst:`,
+`configsip:` — and then nothing. That is the chip, not the sketch, and it
+is normal.
+
+- [ ] Baseline boot number noted
+- [ ] Hold **the top-face button** until water comes out of the outlet —
+      this is priming, and that water does not count. There is nothing to
+      press on the watering unit itself; the button is always on the
+      controller.
+- [ ] Measuring jug emptied after priming
 
 ### Flow rate
 
-Run it three times. `run 10`, read the jug, `ml <n>`.
+Three times: `run 10` (runs the pump for ten seconds), read the jug, then
+`ml <n>` with what you measured. The sketch does the arithmetic and prints
+both the flow rate and the `set pulse` value to use.
 
-| Run | ml collected | ml/second |
-|---|---|---|
-| 1 | 100 | 9.4 |
-| 2 | 100 | ~10 (exact timing not captured) |
-| 3 | 100 | 9.8 |
+- [ ] Three runs done, flow rates recorded
 
-    Average flow rate:  ~9.6 ml/s
-    Suggested dose:     set pulse 3   (the sketch printed this)
+**→ Record in [hardware.md](hardware.md):** all three runs, the average,
+and the suggested `set pulse`.
 
 **If the pump does not run at all:** the pin assignment is wrong, or the
-Grove cable is not seated. Yellow is `PUMP_EN` on G26 —
-[hardware.md](hardware.md).
+Grove cable is not seated. Yellow is `PUMP_EN` on G26.
 
-**If the numbers vary wildly between runs:** normal for a pump this
-small, especially the first run after priming. Average them, and lean
-towards the *higher* ml/s figure when setting the dose, since that errs
-towards less water.
+**If the numbers vary a lot between runs:** normal for a pump this small,
+especially the first run after priming. Average them, and lean towards the
+*higher* ml/s figure when setting the dose, since that errs towards less
+water.
 
 ### Brownout
 
-- [x] Type `status` after the runs. Boot number now: `1`
-- [x] Reset cause reported: `power on`
+- [ ] `status` again after the runs — has the boot number moved?
 
-    Did it brown out?   no — not on MacBook USB-C power (boot number
-                        held at 1 across three full 10s runs)
-    Charger used:       MacBook USB-C port
+**→ Record in [hardware.md](hardware.md):** boot number before and after,
+the reset cause, and **which charger you used**.
 
-    STILL TO DO: repeat with the actual USB-C wall charger before
-    treating this as settled — see docs/hardware.md.
+That last part matters. If you tested while powered from a laptop USB
+port — which you will be, since that is what you are programming
+through — you have not yet tested the wall charger the finished kit
+actually runs on. They do not always supply the same current. Repeat with
+the real charger before treating this as settled.
 
 **If the boot number went up and the cause says `BROWNOUT`:** the pump is
 starving the board through the Atom's 5V pin. Wire the pump's red 5V wire
@@ -151,7 +168,8 @@ which. Do not ship a kit with a charger that browns out.
 
 ## Step 3 — `02_read_sensor` (an hour, mostly waiting)
 
-What the sensor actually reads. The pump is never used by this sketch.
+What the sensor actually reads. The pump is never used by this sketch, so
+nothing can get wet unexpectedly.
 
 ```bash
 cd sketches/02_read_sensor
@@ -160,50 +178,43 @@ arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 ```
 
-This sketch is read-only, no typed commands — capture a reading with a
-button click instead, and watch it appear in that same monitor window.
-Write down the smoothed value:
+No typed commands here — it streams readings on its own, and a **button
+click** captures one as a labelled reference. Take four:
 
-| Where the probe is | Smoothed reading |
-|---|---|
-| Clean and dry, in open air |  |
-| Standing in a glass of water |  |
-| Pushed into dry soil in the pot |  |
-| Same pot, 30 min after watering thoroughly |  |
+- [ ] Probe clean and dry, in open air
+- [ ] Probe standing in a glass of water
+- [ ] Probe pushed into dry soil in the actual pot
+- [ ] Same pot, 30 minutes after watering it thoroughly
 
-    Jitter within a window (steady conditions):  ________ counts
-    Direction:  wetter reads   higher / lower
-
-- [ ] Any reading fall outside 100–4000? `yes / no`
+**→ Record in [hardware.md](hardware.md):** all four readings, the jitter
+figure, and whether wetter reads higher or lower.
 
 **Direction does not matter.** The firmware works it out from the
 calibration points, so there is nothing to configure and nothing to get
 backwards.
 
 **If any real reading lands near 100 or 4000**, those are the bounds the
-firmware treats as a broken cable. Move `SENSOR_RAW_MIN` / `SENSOR_RAW_MAX`
-in the sketch so real soil cannot trip a false fault.
+firmware treats as a broken cable. That is a change to the sketch, not a
+setting — see Step 5.
 
 ### The one that decides everything: how wide is the soil range?
 
-Compare the two spans:
-
-    air → water spread:        ________
-    dry soil → wet soil spread: ________
+Compare two spans: air → water, and dry soil → wet soil.
 
 If the soil spread is a decent fraction of the air/water spread, calibrate
-with air and water as the guide says, and the default thresholds are a
-reasonable start.
+with air and water in Step 4 and the default thresholds are a reasonable
+start.
 
 **If the soil spread is much narrower** — say a fifth of it — then
-calibrating against air and water squashes all real soil readings into a
+calibrating against air and water squashes every real reading into a
 narrow band of the percentage scale, and thresholds of 30% and 55% will
-never be crossed. In that case calibrate against the *soil* endpoints
-instead: `cal dry` with the probe in the dry pot, `cal wet` in the same
-pot right after watering. The scale then spans the range the device
-actually lives in, and the thresholds mean something.
+never be crossed. The device would sit at 45% forever and never water
+anything. In that case calibrate against the *soil* endpoints instead:
+`cal dry` with the probe in the dry pot, `cal wet` in the same pot right
+after watering. The scale then spans the range the device actually lives
+in, and the thresholds mean something.
 
-    Calibrating against:   air/water   /   dry soil/wet soil
+- [ ] Decided which pair to calibrate against
 
 ---
 
@@ -216,13 +227,13 @@ arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 ```
 
-LED should be **yellow** — not calibrated, pump disabled. Type each
-command below into that same monitor window:
+LED should be **yellow** — not calibrated, so the pump is disabled. Type
+each of these into that same monitor window:
 
-- [ ] `cal dry` — reading captured: `______`
-- [ ] `cal wet` — reading captured: `______`
-- [ ] `set pulse ______` (from Step 2)
-- [ ] `save`
+- [ ] `cal dry` — with the probe wherever Step 3 decided
+- [ ] `cal wet` — likewise
+- [ ] `set pulse <n>` — the number Step 2 gave you
+- [ ] `save` — without this it is all lost on reboot
 - [ ] `status` looks right, LED now **blue and breathing**
 
 ### Supervised first cycle — do not skip
@@ -236,7 +247,8 @@ dose with `water` and watch the whole thing.
 - [ ] The jar is **lower than the pot** (or it will siphon itself empty)
 - [ ] Come back after the soak and check the reading moved
 
-    Moisture before dose: ______%     after soak: ______%
+**→ Record in [hardware.md](hardware.md):** moisture before the dose and
+after the soak, and the settings this kit ended up with.
 
 **If the reading barely moved:** either the dose is too small, or the
 water is not reaching the probe. Fix the tube position before touching the
@@ -245,21 +257,46 @@ it working correctly, not a bug.
 
 ---
 
-## Step 5 — record it
+## Step 5 — where the numbers actually go
 
-- [ ] Copy the flow rate, brownout result, and sensor ranges into
-      [hardware.md](hardware.md), tagged with which kit
-- [ ] Note anything the docs got wrong, especially the assembly steps in
-      [user-guide.md](user-guide.md), which were written from M5Stack's
-      documentation rather than from the kit in hand
-- [ ] Update any threshold or bound in the sketch that this session proved
-      wrong, and say why in the commit message
+Three different destinations, and mixing them up is the easy mistake.
 
-    Settings this kit ended up with:
+### 1. Into the device, over serial — most of them
 
-        set pulse  ______        set soak   ______
-        set below  ______        set above  ______
-        set maxday ______
+Calibration and settings live in the device's own flash, set with the
+commands in Step 4 and kept by `save`. **These are per-device and are
+meant to differ between kits** — different sensor, different soil,
+different pot. They are never committed to the repo.
+
+    cal dry / cal wet      set pulse     set soak
+    set below / set above  set maxday
+
+Reflashing does not erase them. `status` shows what a device currently
+holds.
+
+### 2. Into the sketch source — only if a *shared* assumption was wrong
+
+These are compile-time constants, identical on both kits, and changing one
+means editing the code and committing it:
+
+| What | Where | Change it if |
+|---|---|---|
+| `SENSOR_RAW_MIN` / `SENSOR_RAW_MAX` | `plant_watering_buddy.ino` | Real soil readings come near 100 or 4000, so a healthy probe could trip a false "broken cable" fault |
+| `Settings cfg` defaults (`soakMinutes`, `waterBelowPct`, `stopAbovePct`, `maxPulsesPerDay`) | same file | Experience shows the starting values are simply bad, so the *next* person should start closer to right |
+| `SUGGESTED_DOSE_ML` | `03_pump_pulse.ino` | 25 ml turns out to be the wrong ballpark for a houseplant |
+
+Say why in the commit message — a threshold changed without a reason
+is indistinguishable from a typo six months later.
+
+- [ ] Anything this session proved wrong, changed in the sketch and
+      committed
+
+### 3. Into the docs — the measurements themselves
+
+- [ ] Results written into [hardware.md](hardware.md) under this kit
+- [ ] Anything the docs got wrong, fixed — especially the assembly steps
+      in [user-guide.md](user-guide.md), which were written from
+      M5Stack's documentation rather than from a kit in hand
 
 ## What will probably need changing
 

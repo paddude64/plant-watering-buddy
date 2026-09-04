@@ -29,7 +29,7 @@ Capacitive moisture sensor plus a pump on one wand, sharing a single
 The sensor is capacitive rather than resistive, which is the good kind:
 no exposed electrodes corroding away in wet soil over months.
 
-## The power question — unresolved until hardware arrives
+## The power question
 
 M5 rate the pump at **5W**. At 5V that is up to 1A, against the Atom
 Lite's 500mA input rating. In practice
@@ -53,32 +53,13 @@ in flash and prints `esp_reset_reason()` on every startup. If the boot
 number climbs while the pump runs and the cause reads `BROWNOUT`, that is
 the answer. Test with the charger you actually intend to leave it on.
 
-    Browns out through the Atom's 5V pin?  no — not on MacBook USB-C power
-    Charger used:  MacBook USB-C port (same port used for programming)
-                   (date: 2026-09-04, kit: Kit 1)
+Results per kit are below.
 
-    Tested: boot number held at 1, cause `power on`, across three
-    consecutive full 10-second pump runs. No reset, no BROWNOUT.
+## Flow rate
 
-    NOT YET TESTED: the actual USB-C wall charger the finished kit will
-    run on day to day. A laptop's own USB port and a wall charger do not
-    always supply the same current — repeat this test with that charger
-    before treating the wiring question as closed.
-
-## Unknown: flow rate
-
-M5 do not publish one. Since the whole safety design depends on knowing
-how much water a given number of seconds of pumping delivers, measure it:
-run the pump into a measuring jug for a timed 30 seconds and do the
-arithmetic. Record the answer here.
-
-    Measured flow rate: ~9.6 ml/s   (date: 2026-09-04, kit: Kit 1)
-
-        Run 1:  100 ml in 10.627 s  =  9.4 ml/s
-        Run 2:  100 ml in ~10 s     =  ~10 ml/s (not captured precisely)
-        Run 3:  100 ml in 10.159 s  =  9.8 ml/s
-
-    Suggested dose (25 ml): set pulse 3
+M5 do not publish one, and the whole safety design depends on knowing how
+much water a given number of seconds of pumping delivers — so it has to be
+measured on each kit. Results per kit are below.
 
 `03_pump_pulse` measures this for you: prime the tube, `run 10`, then tell
 it how many millilitres landed in the jug with `ml <n>`. It prints the flow
@@ -103,3 +84,107 @@ exactly why calibration has to happen on each device rather than being
 baked into the source. Values at the extremes (0, or pinned near 4095)
 should be treated as "sensor probably disconnected", not as real soil
 readings.
+
+---
+
+# Measured results, per kit
+
+Filled in by working through [bring-up.md](bring-up.md). **Each kit gets
+its own block** — two pumps and two sensors will not agree, and a number
+from one kit is not a substitute for measuring the other.
+
+Calibration and settings (`cal dry`, `set pulse`, and the rest) live in
+each device's own flash, not here. What is recorded here is the
+*measurements* — the evidence behind those settings, and the answers to
+the two questions the firmware cannot work out for itself.
+
+## Kit 1
+
+    Date:        2026-09-04
+    Serial port: /dev/cu.usbserial-8152483DF5
+
+**Step 1 — `01_blink`:** passed. LED cycle, button override and serial
+output all confirmed on real hardware.
+
+**Step 2 — flow rate:**
+
+| Run | Collected | Pump ran for | Rate |
+|---|---|---|---|
+| 1 | 100 ml | 10.627 s | 9.4 ml/s |
+| 2 | 100 ml | ~10 s (not captured) | ~10 ml/s |
+| 3 | 100 ml | 10.159 s | 9.8 ml/s |
+
+    Average:        ~9.6 ml/s
+    Dose setting:   set pulse 3      (for a 25 ml dose)
+
+**Step 2 — brownout:** no brownout. Boot number held at 1, cause
+`power on`, across three consecutive full 10-second runs.
+
+    Charger tested:   MacBook USB-C port (the same port used for
+                      programming)
+    Still outstanding: the USB-C wall charger the finished kit will
+                      actually run on. A laptop port and a wall charger do
+                      not always supply the same current, so the wiring
+                      question is not closed until that is retested.
+
+**Step 3 — sensor:** not done yet.
+
+| Where the probe is | Reading |
+|---|---|
+| Clean and dry, in open air |  |
+| Standing in a glass of water |  |
+| Dry soil in the pot |  |
+| Same pot, 30 min after watering |  |
+
+    Jitter in steady conditions:  ________ counts
+    Wetter reads:                 higher / lower
+    Calibrated against:           air/water  /  dry soil/wet soil
+
+**Step 4 — first cycle:** not done yet.
+
+    Moisture before dose: ________%    after soak: ________%
+    Settings: set pulse ____  set soak ____  set below ____
+              set above ____  set maxday ____
+
+## Kit 2
+
+    Date:        ____________
+    Serial port: ____________
+
+**Step 1 — `01_blink`:**
+
+**Step 2 — flow rate:**
+
+| Run | Collected | Pump ran for | Rate |
+|---|---|---|---|
+| 1 |  |  |  |
+| 2 |  |  |  |
+| 3 |  |  |  |
+
+    Average:        ________ ml/s
+    Dose setting:   set pulse ________
+
+**Step 2 — brownout:**
+
+    Boot number before / after:  ________ / ________
+    Reset cause:                 ________
+    Charger tested:              ________
+
+**Step 3 — sensor:**
+
+| Where the probe is | Reading |
+|---|---|
+| Clean and dry, in open air |  |
+| Standing in a glass of water |  |
+| Dry soil in the pot |  |
+| Same pot, 30 min after watering |  |
+
+    Jitter in steady conditions:  ________ counts
+    Wetter reads:                 higher / lower
+    Calibrated against:           air/water  /  dry soil/wet soil
+
+**Step 4 — first cycle:**
+
+    Moisture before dose: ________%    after soak: ________%
+    Settings: set pulse ____  set soak ____  set below ____
+              set above ____  set maxday ____
