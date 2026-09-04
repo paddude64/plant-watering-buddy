@@ -23,6 +23,21 @@ Not yet: the plant.
 > Steps 1-2 happen at a sink. The pump moves real water and the point of
 > this session is to find out what it does before it does it near a plant.
 
+### How these sessions work
+
+Every step from here on flashes a sketch, then talks to it the same way:
+open a serial connection, type a command straight into that same
+terminal window, press Enter, read the reply that appears right below
+it. There is nothing else to open — the window running `arduino-cli
+monitor` is both where you type and where the answers show up.
+
+```bash
+arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
+```
+
+Leave it running for the whole step. `Ctrl-C` closes it, which you only
+need if you have to free the port for another `upload`.
+
 ---
 
 ## Step 1 — `01_blink` (5 minutes)
@@ -64,7 +79,8 @@ arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 ```
 
-Everything below happens through that monitor.
+Type each command below directly into that window and press Enter —
+this is the session just described above.
 
 - [x] Boot number at startup: `1`
       Type `status` to read it, rather than trying to catch it at boot.
@@ -137,7 +153,16 @@ which. Do not ship a kit with a charger that browns out.
 
 What the sensor actually reads. The pump is never used by this sketch.
 
-Capture each reading with a button click, and write the smoothed value:
+```bash
+cd sketches/02_read_sensor
+arduino-cli compile --profile atomlite
+arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
+arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
+```
+
+This sketch is read-only, no typed commands — capture a reading with a
+button click instead, and watch it appear in that same monitor window.
+Write down the smoothed value:
 
 | Where the probe is | Smoothed reading |
 |---|---|
@@ -184,8 +209,15 @@ actually lives in, and the thresholds mean something.
 
 ## Step 4 — the real firmware
 
-Flash `plant_watering_buddy`. LED should be **yellow** — not calibrated,
-pump disabled.
+```bash
+cd sketches/plant_watering_buddy
+arduino-cli compile --profile atomlite
+arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
+arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
+```
+
+LED should be **yellow** — not calibrated, pump disabled. Type each
+command below into that same monitor window:
 
 - [ ] `cal dry` — reading captured: `______`
 - [ ] `cal wet` — reading captured: `______`
