@@ -54,8 +54,16 @@ kits get wired, and you do not want to assemble anything twice.
 Connect the watering unit to the Grove port. Inlet tube in the jug of
 water, **outlet tube into the empty measuring jug**.
 
-Flash `03_pump_pulse` and open the serial monitor, same as Step 1
-(`arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200`).
+Flash `03_pump_pulse`, then open the serial monitor using the port name
+you wrote down in Step 1:
+
+```bash
+cd sketches/03_pump_pulse
+arduino-cli compile --profile atomlite
+arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
+arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
+```
+
 Everything below happens through that monitor.
 
 - [ ] Boot number at startup: `______`
