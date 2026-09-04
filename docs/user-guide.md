@@ -42,7 +42,7 @@ If something is wrong, you want to be debugging one thing, not three.
 refuse to run the pump anyway until it has been calibrated, and the two
 sketches below are how you get the numbers to calibrate it with.
 
-## 3. Look at the sensor — `02_read_sensor`
+## 3. Look at the sensor — `03_read_sensor`
 
 Plug the watering unit into the controller's Grove port. This sketch
 never runs the pump, so nothing can go wrong or get wet.
@@ -55,7 +55,7 @@ Two things to come away with: **which direction the numbers go** when it
 gets wetter, and **how far apart dry soil and wet soil really are**. Write
 them in [hardware.md](hardware.md).
 
-## 4. Measure the pump — `03_pump_pulse`
+## 4. Measure the pump — `02_pump_pulse`
 
 **Do this over a sink, with the outlet tube in a measuring jug. Not over
 a plant.**
@@ -95,7 +95,7 @@ In the serial monitor, type `help` to see everything it can do. Then:
 ```
 cal dry            probe clean and dry, held in open air
 cal wet            probe standing in a glass of water
-set pulse 6        the number sketch 03 gave you
+set pulse 6        the number sketch 02 gave you
 save
 ```
 

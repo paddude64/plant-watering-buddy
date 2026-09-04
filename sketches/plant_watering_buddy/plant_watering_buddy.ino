@@ -35,7 +35,7 @@
 
     1. `cal dry`  with the probe clean and dry in open air
     2. `cal wet`  with the probe in a glass of water
-    3. `set pulse <seconds>` from the flow rate measured by sketch 03 —
+    3. `set pulse <seconds>` from the flow rate measured by sketch 02 —
        see docs/hardware.md
     4. `save`
 
@@ -81,7 +81,7 @@ const int PULSE_SECONDS_MAX = 15;                       // ceiling on `set pulse
 const int MAX_PULSES_PER_DAY_MAX = 20;
 
 // A reading outside this band is a wiring fault, not soil. Narrow these once
-// you have seen what your own sensor actually does in sketch 02.
+// you have seen what your own sensor actually does in sketch 03.
 const int SENSOR_RAW_MIN = 100;
 const int SENSOR_RAW_MAX = 4000;
 

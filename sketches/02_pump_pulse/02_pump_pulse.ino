@@ -1,5 +1,5 @@
 /*
-  03_pump_pulse — measure the pump, and settle the power question
+  02_pump_pulse — measure the pump, and settle the power question
   ==============================================================
 
   This is the most useful sketch in the repo, because it produces the one
@@ -272,7 +272,7 @@ void setup() {
   esp_reset_reason_t reason = esp_reset_reason();
 
   Serial.println();
-  Serial.println("03_pump_pulse");
+  Serial.println("02_pump_pulse");
   Serial.printf("  boot number %d, cause: %s\n", bootCount,
                 resetReasonText(reason));
   if (reason == ESP_RST_BROWNOUT) {

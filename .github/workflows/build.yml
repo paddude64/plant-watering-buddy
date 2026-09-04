@@ -23,8 +23,8 @@ jobs:
       matrix:
         sketch:
           - 01_blink
-          - 02_read_sensor
-          - 03_pump_pulse
+          - 02_pump_pulse
+          - 03_read_sensor
           - plant_watering_buddy
 
     steps:

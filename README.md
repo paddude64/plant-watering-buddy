@@ -74,8 +74,8 @@ exercises:
 | Sketch | What it proves |
 |---|---|
 | [`01_blink`](sketches/01_blink) | Toolchain works; LED and button respond. No libraries. |
-| [`02_read_sensor`](sketches/02_read_sensor) | What the sensor actually reads, which direction it goes, and how noisy it is. Never runs the pump. |
-| [`03_pump_pulse`](sketches/03_pump_pulse) | **Measures the flow rate**, and answers the brownout question by counting boots and reading the reset reason. |
+| [`02_pump_pulse`](sketches/02_pump_pulse) | **Measures the flow rate**, and answers the brownout question by counting boots and reading the reset reason. |
+| [`03_read_sensor`](sketches/03_read_sensor) | What the sensor actually reads, which direction it goes, and how noisy it is. Never runs the pump. |
 | [`plant_watering_buddy`](sketches/plant_watering_buddy) | The real thing. Pulse-and-soak control, calibration in flash, serial console. |
 
 **02 and 03 exist to produce numbers that the real firmware needs.** The
@@ -90,6 +90,13 @@ Until it has them, `plant_watering_buddy` shows a yellow LED and refuses
 to run the pump at all, on the grounds that an uncalibrated dose is a
 guessed dose. So the ladder is not optional ceremony — skipping to the
 last sketch gets you a device that will not water anything.
+
+The pump comes before the sensor deliberately, even though meeting the
+pump second sounds like the bolder order. Whether the pump browns out the
+board decides how *both* kits get wired, and that answer is wanted before
+anything is assembled — whereas the sensor step needs a pot, damp soil and
+an hour of waiting. `02` is done at a sink in half an hour and settles the
+question.
 
 [docs/bring-up.md](docs/bring-up.md) is the procedure for all of it, and
 its Step 5 covers the one case where a measurement *does* belong in the

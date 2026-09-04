@@ -4,7 +4,7 @@ Goal: get `01_blink` running on the Atom Lite. Once the LED changes colour,
 your toolchain is proven and everything after this is just code.
 
 You need the Atom Lite and a USB-C cable. The Watering Unit stays in its
-packaging for now — don't plug it in until sketch `03`.
+packaging for now — don't plug it in until sketch `02`.
 
 ## 1. Install the toolchain
 

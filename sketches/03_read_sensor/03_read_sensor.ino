@@ -1,5 +1,5 @@
 /*
-  02_read_sensor — what the moisture sensor actually does
+  03_read_sensor — what the moisture sensor actually does
   ======================================================
 
   WHAT THIS TEACHES
@@ -182,7 +182,7 @@ void setup() {
   delay(500);
 
   Serial.println();
-  Serial.println("02_read_sensor");
+  Serial.println("03_read_sensor");
   Serial.println("Click the button to capture a labelled reading.");
   Serial.println("Double-click to reset the min/max range.");
   Serial.println();

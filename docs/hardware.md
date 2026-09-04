@@ -46,7 +46,7 @@ directly to the USB supply, keeping ground common between the two.
 are wired identically and the same firmware behaves the same way in two
 different houses.
 
-[`03_pump_pulse`](../sketches/03_pump_pulse) answers it definitively rather
+[`02_pump_pulse`](../sketches/02_pump_pulse) answers it definitively rather
 than by impression. A brownout is easy to miss — the board reboots so fast
 it just looks like the pump stuttered — so that sketch keeps a boot counter
 in flash and prints `esp_reset_reason()` on every startup. If the boot
@@ -61,7 +61,7 @@ M5 do not publish one, and the whole safety design depends on knowing how
 much water a given number of seconds of pumping delivers — so it has to be
 measured on each kit. Results per kit are below.
 
-`03_pump_pulse` measures this for you: prime the tube, `run 10`, then tell
+`02_pump_pulse` measures this for you: prime the tube, `run 10`, then tell
 it how many millilitres landed in the jug with `ml <n>`. It prints the flow
 rate and the `set pulse` value to use. Run it a few times and average — a
 pump this small is not very repeatable.

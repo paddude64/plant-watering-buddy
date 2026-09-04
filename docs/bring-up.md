@@ -79,7 +79,7 @@ board and the upload path are known-good.
 
 ---
 
-## Step 2 — `03_pump_pulse` (30 minutes, at the sink)
+## Step 2 — `02_pump_pulse` (30 minutes, at the sink)
 
 Two questions at once: how much water per second, and does the pump brown
 out the board. Do this before Step 3, because the answer decides how the
@@ -89,7 +89,7 @@ Connect the watering unit to the Grove port. Inlet tube in the jug of
 water, **outlet tube into the empty measuring jug**.
 
 ```bash
-cd sketches/03_pump_pulse
+cd sketches/02_pump_pulse
 arduino-cli compile --profile atomlite
 arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
@@ -166,13 +166,13 @@ which. Do not ship a kit with a charger that browns out.
 
 ---
 
-## Step 3 — `02_read_sensor` (an hour, mostly waiting)
+## Step 3 — `03_read_sensor` (an hour, mostly waiting)
 
 What the sensor actually reads. The pump is never used by this sketch, so
 nothing can get wet unexpectedly.
 
 ```bash
-cd sketches/02_read_sensor
+cd sketches/03_read_sensor
 arduino-cli compile --profile atomlite
 arduino-cli upload --profile atomlite -p /dev/cu.usbserial-XXXXXXXX
 arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
@@ -298,7 +298,7 @@ means editing the code and committing it:
 |---|---|---|
 | `SENSOR_RAW_MIN` / `SENSOR_RAW_MAX` | `plant_watering_buddy.ino` | Real soil readings come near 100 or 4000, so a healthy probe could trip a false "broken cable" fault |
 | `Settings cfg` defaults (`soakMinutes`, `waterBelowPct`, `stopAbovePct`, `maxPulsesPerDay`) | same file | Experience shows the starting values are simply bad, so the *next* person should start closer to right |
-| `SUGGESTED_DOSE_ML` | `03_pump_pulse.ino` | 25 ml turns out to be the wrong ballpark for a houseplant |
+| `SUGGESTED_DOSE_ML` | `02_pump_pulse.ino` | 25 ml turns out to be the wrong ballpark for a houseplant |
 
 Say why in the commit message — a threshold changed without a reason
 is indistinguishable from a typo six months later.
