@@ -3,7 +3,7 @@
 profiles:
   atomlite:
     notes: M5Stack Atom Lite (ESP32-PICO-D4) + Watering Unit (U101)
-    fqbn: esp32:esp32:m5stack_atom
+    fqbn: esp32:esp32:m5stack_atom:UploadSpeed=115200
     platforms:
       - platform: esp32:esp32 (3.3.10)
         platform_index_url: https://espressif.github.io/arduino-esp32/package_esp32_index.json

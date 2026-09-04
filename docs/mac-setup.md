@@ -90,6 +90,14 @@ this is the first thing to check.
 Usually the serial monitor is still attached — quit it. Otherwise unplug
 the device, plug it back in, and check the port name hasn't changed.
 
+**`upload` connects, reads the chip fine, then fails with `esptool`
+printing a Python traceback ending `StopIteration` / "The chip stopped
+responding" while probing flash.** Seen on a real Atom Lite + Mac: the
+default upload speed is too fast for this board/driver/esptool
+combination. Every `sketch.yaml` in this repo already pins
+`UploadSpeed=115200` on the FQBN for this reason — if you copy a
+`sketch.yaml` from elsewhere or hand-roll one, keep that suffix.
+
 **Compile fails complaining about a missing library.**
 You probably left off `--profile atomlite`. With the profile, the required
 libraries are fetched automatically.
