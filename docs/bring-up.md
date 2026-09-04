@@ -67,14 +67,21 @@ arduino-cli monitor -p /dev/cu.usbserial-XXXXXXXX -c baudrate=115200
 Everything below happens through that monitor.
 
 - [ ] Boot number at startup: `______`
-      A moment after the monitor connects, ignore a few lines of ESP32
-      boot-ROM text first (`ets Jun 8 2016 ...`, `rst:`, `configsip:` —
-      that is the chip itself, before any of our code runs). Right after
-      that comes the sketch's own line, e.g. `boot number 3, cause: power
-      on`. It counts up on every reset — including a reset you did not
-      ask for, like a brownout — which is the whole reason it is worth
-      writing down now: it gives you a baseline to compare against after
-      the runs below. See **Brownout** at the end of this step.
+      Type `status` to read it, rather than trying to catch it at boot.
+      `upload` resets the board itself the moment flashing finishes —
+      before `monitor` has even started — so the sketch's own startup
+      line is reliably gone by the time you are watching; you will
+      likely see a few lines of ESP32 boot-ROM text (`ets Jun 8 2016
+      ...`, `rst:`, `configsip:`) and then nothing. `status` sidesteps
+      that entirely and prints the same information on demand:
+
+          boot number      : 3
+          this boot's cause: power on
+
+      The number itself counts up on every reset — including one you
+      did not ask for, like a brownout — which is the whole reason it is
+      worth writing down now: it gives you a baseline to compare against
+      after the runs below. See **Brownout** at the end of this step.
 - [ ] Hold **the same top-face button as Step 1** until water comes out
       of the outlet — this is priming, and that water does not count.
       There is nothing to press on the watering unit itself; the button
