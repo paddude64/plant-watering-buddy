@@ -47,6 +47,7 @@
 */
 
 #include <Preferences.h>
+#include <esp_system.h>
 #include <esp_task_wdt.h>
 
 const char *FIRMWARE_VERSION = "0.2.0-dev";
@@ -149,6 +150,17 @@ LockReason lockReason = LOCK_NONE;
 // Whether the hardware watchdog actually armed. Checked rather than assumed:
 // a watchdog you believe in but do not have is worse than none.
 bool watchdogArmed = false;
+
+// Brownouts seen since the counter was last cleared, kept in flash.
+//
+// This is a diagnosis aid, not a safeguard — setup() already switches the
+// pump off after any reset, whatever caused it. It exists because a
+// brownout imitates a plumbing fault: the pump cuts out mid-dose, the soil
+// never gets wetter, and after three such doses the device locks out
+// reporting that water is not reaching the plant. That sends someone to
+// check the jar and the tubing when the real problem is the power supply.
+// A count here lets `status` tell them apart.
+int brownoutCount = 0;
 
 bool pumpRunning = false;
 bool manualLimitReported = false;  // so the timeout is announced once, not
@@ -296,7 +308,9 @@ const char *lockReasonText() {
   switch (lockReason) {
     case LOCK_NO_RESPONSE:
       return "watered repeatedly but the soil never got wetter — check the "
-             "water jar, the tube, and that the probe is still in the soil";
+             "water jar, the tube, and that the probe is still in the soil "
+             "(and check `status` for brownouts: a supply that cannot start "
+             "the pump looks exactly like this)";
     case LOCK_DAILY_CAP:
       return "used up the maximum doses for one day";
     case LOCK_HARD_TIMEOUT:
@@ -416,6 +430,12 @@ void loadSettings() {
   // make it water less than it should, which is the safe direction to be
   // wrong in. `clear` resets it.
   pulsesToday = prefs.getInt("pulsesDay", 0);
+
+  brownoutCount = prefs.getInt("brownouts", 0);
+  if (esp_reset_reason() == ESP_RST_BROWNOUT) {
+    brownoutCount++;
+    prefs.putInt("brownouts", brownoutCount);
+  }
 }
 
 void saveSettings() {
@@ -670,6 +690,8 @@ void printStatus() {
   Serial.printf("  doses today    : %d of %d\n", pulsesToday, cfg.maxPulsesPerDay);
   Serial.printf("  uptime         : %lu min\n", millis() / 60000UL);
   Serial.printf("  watchdog       : %s\n", watchdogArmed ? "armed" : "NOT ARMED");
+  Serial.printf("  brownouts      : %d%s\n", brownoutCount,
+                brownoutCount ? "   <-- power supply, not plumbing" : "");
   Serial.println("  settings:");
   Serial.printf("    calibration  : %s (dry %d, wet %d)\n",
                 cfg.calibrated ? "done" : "NOT DONE", cfg.dryRaw, cfg.wetRaw);
@@ -696,7 +718,7 @@ void printHelp() {
   Serial.println("  set maxday <n>      doses allowed per day");
   Serial.println("  water               force one dose now");
   Serial.println("  stop                pump off (does NOT clear a lockout)");
-  Serial.println("  clear               clear a lockout and the day's dose count");
+  Serial.println("  clear               clear a lockout, dose count and brownouts");
   Serial.println("  save                write settings to flash");
   Serial.println();
 }
@@ -742,6 +764,8 @@ void setSetting(const String &name, int value) {
 }
 
 void clearLockout() {
+  brownoutCount = 0;
+  prefs.putInt("brownouts", 0);
   // Stop the pump first. Without this, clearing during a dose lands in
   // ST_IDLE with the pump still energised, and ST_IDLE is the one state that
   // does not defensively switch it off — so it would run to the hard ceiling.

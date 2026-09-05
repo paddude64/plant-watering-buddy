@@ -117,15 +117,20 @@ output all confirmed on real hardware.
     Average:        ~9.6 ml/s
     Dose setting:   set pulse 3      (for a 25 ml dose)
 
-**Step 2 — brownout:** no brownout. Boot number held at 1, cause
-`power on`, across three consecutive full 10-second runs.
+**Step 2 — brownout:**
 
-    Charger tested:   MacBook USB-C port (the same port used for
-                      programming)
-    Still outstanding: the USB-C wall charger the finished kit will
-                      actually run on. A laptop port and a wall charger do
-                      not always supply the same current, so the wiring
-                      question is not closed until that is retested.
+| Supply | Brownouts | Verdict |
+|---|---|---|
+| MacBook USB-C port (also used for programming) | 0 | fine |
+| USB-C wall charger the kit will live on | not tested | **outstanding** |
+
+Boot number held at 1 across three consecutive full 10-second runs on
+laptop power — no reset of any kind.
+
+The wall charger is the test that actually decides the wiring, and it has
+not been done. A laptop port and a phone charger do not supply the same
+current, and it is the charger that will be plugged in at the plant for
+months. Until then the wiring question is open.
 
 **Step 3 — sensor:** not done yet.
 

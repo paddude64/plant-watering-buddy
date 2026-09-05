@@ -144,22 +144,54 @@ water.
 
 ### Brownout
 
-- [ ] `status` again after the runs — has the boot number moved?
+A brownout is the 5V rail sagging when the pump motor starts, far enough
+that the ESP32's own detector forces a reset to protect itself. It matters
+because it is invisible — the board is back in a few hundred milliseconds
+— and because it imitates a plumbing fault: doses get cut short, the soil
+never gets wetter, and the real firmware eventually locks out blaming the
+water jar.
 
-**→ Record in [hardware.md](hardware.md):** boot number before and after,
-the reset cause, and **which charger you used**.
+The sketch counts brownouts and keeps the tally in flash, so `status`
+reports them however long ago they happened.
 
-That last part matters. If you tested while powered from a laptop USB
-port — which you will be, since that is what you are programming
-through — you have not yet tested the wall charger the finished kit
-actually runs on. They do not always supply the same current. Repeat with
-the real charger before treating this as settled.
+#### On laptop power
 
-**If the boot number went up and the cause says `BROWNOUT`:** the pump is
-starving the board through the Atom's 5V pin. Wire the pump's red 5V wire
-directly to the USB supply, ground common — [hardware.md](hardware.md) —
-then repeat this step. **Wire both kits the same way**, whichever way it
-turns out.
+- [ ] `status` after the runs — `brownouts so far` should read 0
+
+#### On the charger it will actually live on
+
+This is the test that counts, and it is the one people skip. A laptop USB
+port and a phone charger do not supply the same current, and it is the
+charger that will be plugged in at the plant for months.
+
+The Atom Lite has one USB-C port carrying both power and data, so **you
+cannot watch over serial while it runs on a charger** — which is exactly
+why the tally is kept in flash rather than just printed at boot.
+
+1. `reset` — zeroes the counters, so this charger gets a clean test
+2. Unplug from the laptop, plug into the wall charger
+3. **Hold the button** to run the pump. No serial needed. Do it several
+   times, and watch the LED — a reset makes it blink off and come back,
+   which is the brownout happening in front of you
+4. Unplug, plug back into the laptop, `status`
+
+- [ ] `brownouts so far` after the charger test: `______`
+
+Anything above zero means that charger cannot start this pump through the
+Atom.
+
+> Do not try to read `this boot's cause` for this — it only ever describes
+> the *most recent* reset, and that will be you plugging into the laptop.
+> It will say `power on` however badly the charger performed. The tally is
+> the only part that survives the trip.
+
+**→ Record in [hardware.md](hardware.md):** the brownout count for each
+charger tested, and **which chargers those were**.
+
+**If there were brownouts:** the pump is starving the board through the
+Atom's 5V pin. Wire the pump's red 5V wire directly to the USB supply,
+ground common — [hardware.md](hardware.md) — then repeat this step.
+**Wire both kits the same way**, whichever way it turns out.
 
 **If it browns out only with one charger:** use the better one, and note
 which. Do not ship a kit with a charger that browns out.

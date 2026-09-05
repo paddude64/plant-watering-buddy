@@ -94,6 +94,7 @@ unsigned long pumpStartedAt = 0;
 unsigned long requestedRunMs = 0;   // 0 means "while the button is held"
 unsigned long lastRunMs = 0;        // how long the last completed run lasted
 int bootCount = 0;
+int brownoutCount = 0;              // brownouts ever seen, kept in flash
 
 String inputLine;
 
@@ -185,13 +186,15 @@ void printStatus() {
   Serial.printf("  boot number      : %d\n", bootCount);
   Serial.printf("  this boot's cause: %s\n",
                 resetReasonText(esp_reset_reason()));
+  Serial.printf("  brownouts so far : %d%s\n", brownoutCount,
+                brownoutCount ? "   <-- the supply cannot take the pump" : "");
   Serial.printf("  pump             : %s\n", pumpRunning ? "RUNNING" : "off");
   if (lastRunMs) Serial.printf("  last run         : %lu ms\n", lastRunMs);
   Serial.println();
-  Serial.println("  If the boot number went up while the pump was running,");
-  Serial.println("  and the cause says BROWNOUT, the pump is pulling more");
-  Serial.println("  than this supply can give through the Atom. See");
-  Serial.println("  docs/hardware.md for the direct-to-USB wiring fix.");
+  Serial.println("  Any brownouts at all means the pump is pulling more than");
+  Serial.println("  that supply can give through the Atom. See docs/hardware.md");
+  Serial.println("  for the direct-to-USB wiring fix. `reset counters` starts");
+  Serial.println("  the tally again before testing a different charger.");
   Serial.println();
 }
 
@@ -199,7 +202,8 @@ void printHelp() {
   Serial.println();
   Serial.println("  run <sec>   run the pump for 1-20 seconds");
   Serial.println("  ml <n>      millilitres collected from the last run");
-  Serial.println("  status      boot count, reset reason, last run");
+  Serial.println("  status      boot count, brownouts, reset reason, last run");
+  Serial.println("  reset       zero the boot and brownout counters");
   Serial.println("  stop        stop the pump now");
   Serial.println("  Hold the button to run the pump while held.");
   Serial.println();
@@ -221,6 +225,14 @@ void handleCommand(String line) {
     printHelp();
   } else if (verb == "status") {
     printStatus();
+  } else if (verb == "reset") {
+    // Zero the tallies so the next charger gets a clean test rather than
+    // inheriting the last one's numbers.
+    bootCount = 0;
+    brownoutCount = 0;
+    prefs.putInt("boots", 0);
+    prefs.putInt("brownouts", 0);
+    Serial.println("Boot and brownout counters zeroed.");
   } else if (verb == "stop") {
     pumpOff();
   } else if (verb == "run") {
@@ -270,6 +282,18 @@ void setup() {
   prefs.putInt("boots", bootCount);
 
   esp_reset_reason_t reason = esp_reset_reason();
+
+  // Counted separately and kept in flash, because esp_reset_reason() only
+  // ever describes the *most recent* reset. Test the pump on a wall charger
+  // and you cannot be watching over serial — one USB-C port, power or data,
+  // not both — so by the time you plug back into a laptop to look, the most
+  // recent reset is that plug-in and the reason reads "power on" no matter
+  // what happened on the charger. A running total survives the trip.
+  brownoutCount = prefs.getInt("brownouts", 0);
+  if (reason == ESP_RST_BROWNOUT) {
+    brownoutCount++;
+    prefs.putInt("brownouts", brownoutCount);
+  }
 
   Serial.println();
   Serial.println("02_pump_pulse");
