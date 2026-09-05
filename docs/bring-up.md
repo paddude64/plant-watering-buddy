@@ -142,6 +142,43 @@ especially the first run after priming. Average them, and lean towards the
 *higher* ml/s figure when setting the dose, since that errs towards less
 water.
 
+### Running it dry
+
+This step runs the pump dry more than any other, and that is fine within
+limits, so it is worth knowing where the limits are.
+
+**Short bursts are fine.** Priming pulls air through until the water
+arrives, and purging for storage deliberately pushes the water out and
+draws air behind it. Neither hurts anything.
+
+**Sustained dry running is what damages a small pump**, because the water
+it moves is also what carries heat away from the motor and the head. So
+keep dry running to seconds, not minutes.
+
+Two ways to run it dry here without meaning to:
+
+- The inlet tube lifting out of the jug, or the jug emptying, part way
+  through a `run 10`.
+- Priming and then getting distracted — the button runs the pump for as
+  long as you hold it, up to the sketch's twenty-second ceiling.
+
+Listen while it runs. A pump moving water and a pump moving air do not
+sound the same — the note usually rises and the gurgling stops. Once you
+have heard the difference, an empty jug is obvious across the room, which
+is more useful later than it sounds now.
+
+**In normal service this is already bounded.** If the reservoir empties,
+the firmware gives up after three doses that produce no change in the
+soil — around nine seconds of dry running in total, spread over about an
+hour — and then locks out rather than continuing to pump at an empty jar.
+That is comfortably inside what the pump tolerates.
+
+The case nobody has observed yet is a jar that is *nearly* empty and
+sucking air intermittently rather than cleanly running out. That could
+add up to more dry running than a clean empty, spread over several
+cycles. If you see it happen, note what it did — it is the sort of thing
+worth knowing before deciding whether the firmware needs to care.
+
 ### Brownout
 
 A brownout is the 5V rail sagging when the pump motor starts, far enough
