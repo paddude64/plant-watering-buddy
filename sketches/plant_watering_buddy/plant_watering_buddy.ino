@@ -231,7 +231,46 @@ int moisturePercent(int raw) {
 
 const uint8_t LED_LEVEL = 40;  // out of 255; it is a very bright LED
 
+// ---- Fault codes, counted in red flashes ----------------------------------
+//
+// Colour alone cannot carry these. They are conditions rather than states —
+// things that are wrong about the device regardless of what it is currently
+// doing — and both are otherwise invisible without a laptop attached, which
+// is exactly what nobody has at a plant pot.
+//
+// Shown twice at startup, in the manner of a POST beep, and the brownout one
+// is reused as the lockout pattern so there is a single code to recognise
+// rather than two. Listed in docs/led-and-buttons.md.
+const int CODE_WATCHDOG_NOT_ARMED = 2;
+const int CODE_BROWNOUT = 3;
+
 void setLed(uint8_t r, uint8_t g, uint8_t b) { rgbLedWrite(LED_PIN, r, g, b); }
+
+// Non-blocking: is the LED lit right now, for a repeating group of `flashes`
+// short pulses followed by a pause? Used to hold a code on screen
+// indefinitely without stalling the main loop.
+bool codePatternOn(int flashes) {
+  const unsigned long ON_MS = 150, OFF_MS = 200, GAP_MS = 900;
+  unsigned long group = (unsigned long)flashes * (ON_MS + OFF_MS);
+  unsigned long t = millis() % (group + GAP_MS);
+  if (t >= group) return false;          // in the pause between groups
+  return (t % (ON_MS + OFF_MS)) < ON_MS;
+}
+
+// Blocking, and only ever called from setup(), where blocking is fine and
+// someone has just plugged the thing in and is looking at it.
+void showCodeAtBoot(int flashes) {
+  for (int repeat = 0; repeat < 2; repeat++) {
+    for (int i = 0; i < flashes; i++) {
+      setLed(LED_LEVEL, 0, 0);
+      delay(150);
+      setLed(0, 0, 0);
+      delay(200);
+    }
+    if (watchdogArmed) esp_task_wdt_reset();
+    delay(700);
+  }
+}
 
 void updateLed() {
   unsigned long t = millis();
@@ -266,7 +305,14 @@ void updateLed() {
       setLed(blinkFast ? LED_LEVEL : 0, 0, blinkFast ? LED_LEVEL : 0);  // magenta
       break;
     case ST_LOCKOUT:
-      setLed(blinkSlow ? LED_LEVEL : 0, 0, 0);    // red, slow blink
+      // A lockout caused by a failing supply looks identical to one caused by
+      // an empty jar, so say which on the LED rather than making someone
+      // attach a laptop to find out.
+      if (brownoutCount > 0) {
+        setLed(codePatternOn(CODE_BROWNOUT) ? LED_LEVEL : 0, 0, 0);
+      } else {
+        setLed(blinkSlow ? LED_LEVEL : 0, 0, 0);  // red, slow blink
+      }
       break;
   }
 }
@@ -907,6 +953,14 @@ void setup() {
     Serial.printf("WARNING: the watchdog did not arm (%s). The board will not "
                   "reset itself if this loop hangs.\n",
                   esp_err_to_name(wdtErr));
+  }
+
+  // Fault codes last, once everything that could set one has run.
+  if (!watchdogArmed) showCodeAtBoot(CODE_WATCHDOG_NOT_ARMED);
+  if (brownoutCount > 0) {
+    Serial.printf("%d brownout(s) recorded — see docs/led-and-buttons.md\n",
+                  brownoutCount);
+    showCodeAtBoot(CODE_BROWNOUT);
   }
 
   Serial.println();

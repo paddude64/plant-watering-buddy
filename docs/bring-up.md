@@ -171,8 +171,11 @@ why the tally is kept in flash rather than just printed at boot.
 1. `reset` — zeroes the counters, so this charger gets a clean test
 2. Unplug from the laptop, plug into the wall charger
 3. **Hold the button** to run the pump. No serial needed. Do it several
-   times, and watch the LED — a reset makes it blink off and come back,
-   which is the brownout happening in front of you
+   times, and watch the LED: if the board browns out it resets and comes
+   straight back up flashing **red three times**, which is the fault code
+   for "brownouts recorded" — see
+   [led-and-buttons.md](led-and-buttons.md). That is the brownout
+   happening in front of you, with no laptop involved
 4. Unplug, plug back into the laptop, `status`
 
 - [ ] `brownouts so far` after the charger test: `______`

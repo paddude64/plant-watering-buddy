@@ -21,6 +21,33 @@ Cyan is the normal state for most of the day after a watering. It is not a
 problem; it means the design is working, because the device refuses to trust
 the sensor while water is still working its way down to the probe.
 
+## Fault codes — counted red flashes
+
+Two things can be wrong with the device itself rather than with the
+watering, and neither shows up as a colour. They are signalled the way a
+computer signals a POST error: **a number of short red flashes, a pause,
+then the same again.**
+
+Count the flashes.
+
+| Flashes | Meaning | What to do |
+|---|---|---|
+| **2** | The hardware watchdog did not start. The board can no longer restart itself if the software hangs. | Reflash it. If it keeps happening, say so — it is a firmware problem, not yours. |
+| **3** | **Brownouts have been recorded.** The power supply cannot start the pump without the voltage dropping far enough to reset the board. | Use a better USB charger. If it persists, the pump needs wiring directly to the supply — see [hardware.md](hardware.md). |
+
+They are shown **twice at startup**, so plugging the device in is when you
+will normally see one. That is also why a brownout tends to announce
+itself immediately: the brownout resets the board, and the board comes
+straight back up flashing the code that says what just happened.
+
+The **three-flash brownout code is also used as the red lockout pattern**
+whenever brownouts have been recorded. So a red light flashing in threes
+means "stopped, and the power supply is why" — as opposed to the slow,
+even red blink below, which means "stopped, and the water is why". One
+code, two places, so there is only one pattern to learn.
+
+Both clear when you fix the cause and double-click the button.
+
 ### Red: what to check
 
 The device locks out when it waters repeatedly and the soil never gets any

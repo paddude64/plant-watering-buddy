@@ -81,6 +81,13 @@ const int BTN_PIN = 39;
 
 const unsigned long PUMP_HARD_MAX_MS = 20UL * 1000UL;
 
+// Three red flashes at startup means brownouts are on record — the same code
+// the real firmware uses, documented in docs/led-and-buttons.md. It matters
+// most here: testing a wall charger means no serial connection, so a brownout
+// resetting the board and it coming straight back up flashing this is the
+// only live signal there is.
+const int CODE_BROWNOUT = 3;
+
 // A dose for a normal houseplant pot: a splash, not a drink. Used only to
 // suggest a `set pulse` value for the real firmware.
 const int SUGGESTED_DOSE_ML = 25;
@@ -264,6 +271,18 @@ void pollSerial() {
   }
 }
 
+void showCodeAtBoot(int flashes) {
+  for (int repeat = 0; repeat < 2; repeat++) {
+    for (int i = 0; i < flashes; i++) {
+      rgbLedWrite(LED_PIN, 60, 0, 0);
+      delay(150);
+      rgbLedWrite(LED_PIN, 0, 0, 0);
+      delay(200);
+    }
+    delay(700);
+  }
+}
+
 void setup() {
   // First thing, before anything else: pump off. If this boot is a brownout
   // reset that happened mid-run, this is what stops it running again.
@@ -308,6 +327,8 @@ void setup() {
   }
   Serial.println("  Type `help`. Measure over a sink, not over a plant.");
   Serial.println();
+
+  if (brownoutCount > 0) showCodeAtBoot(CODE_BROWNOUT);
 }
 
 void loop() {

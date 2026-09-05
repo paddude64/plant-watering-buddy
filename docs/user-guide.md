@@ -161,7 +161,8 @@ That is all.
 | **Cyan**, slowly breathing | Just watered. Waiting for it to soak in. | No |
 | **Green** | Watering right now. | No |
 | **Yellow** | Not set up yet. | Yes — Part 1, step 5 |
-| **Red**, slowly blinking | It has stopped on purpose. | Yes — see below |
+| **Red**, slow even blink | It has stopped on purpose. | Yes — see below |
+| **Red**, flashing in groups | Something is wrong with the device itself. | Yes — count the flashes, see [led-and-buttons.md](led-and-buttons.md) |
 | **Magenta**, blinking fast | It cannot read the sensor. | Check the Grove cable |
 
 Full details in [led-and-buttons.md](led-and-buttons.md).
