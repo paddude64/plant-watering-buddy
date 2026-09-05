@@ -169,9 +169,10 @@ Full details in [led-and-buttons.md](led-and-buttons.md).
 
 ## If the light is red
 
-It waters, then checks whether the soil got any wetter. If it tries
-several times and nothing changes, it stops and waits for you, rather than
-carrying on pumping. Usually one of these:
+It waters, then checks whether the soil got any wetter. If it tries three
+times and nothing changes — about an hour, since it waits for each dose to
+soak in — it stops and waits for you, rather than carrying on pumping at
+an empty jar. Usually one of these:
 
 1. **The water jar is empty.** This is nearly always the answer.
 2. **The tube is kinked**, or its end is no longer under the water.

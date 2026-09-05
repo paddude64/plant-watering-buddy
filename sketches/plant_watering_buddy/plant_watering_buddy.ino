@@ -797,8 +797,17 @@ void setSetting(const String &name, int value) {
     }
     cfg.stopAbovePct = value;
   } else if (name == "maxday") {
-    if (value < 1 || value > MAX_PULSES_PER_DAY_MAX) {
-      Serial.printf("Must be 1-%d.\n", MAX_PULSES_PER_DAY_MAX);
+    // The floor is not arbitrary. Spotting an empty reservoir takes
+    // MAX_UNRESPONSIVE_PULSES doses in a row that change nothing. Allow a
+    // daily cap below that and the cap always fires first, as LOCK_DAILY_CAP
+    // — which expires on its own after a day, resetting the run of
+    // unresponsive doses — so the device would dry-run the pump a few times
+    // every day forever and never once report that the jar is empty.
+    if (value < MAX_UNRESPONSIVE_PULSES || value > MAX_PULSES_PER_DAY_MAX) {
+      Serial.printf("Must be %d-%d. Below %d, an empty reservoir would never "
+                    "be detected.\n",
+                    MAX_UNRESPONSIVE_PULSES, MAX_PULSES_PER_DAY_MAX,
+                    MAX_UNRESPONSIVE_PULSES);
       return;
     }
     cfg.maxPulsesPerDay = value;
